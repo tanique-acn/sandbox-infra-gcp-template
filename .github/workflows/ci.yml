@@ -1,0 +1,137 @@
+name: "Terraform CI (validate & plan)"
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate-and-plan:
+    name: Validate, Lint and Plan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine target environment
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH="${{ github.event.pull_request.base.ref }}"
+          else
+            BRANCH="${{ github.ref_name }}"
+          fi
+          case "$BRANCH" in
+            main) ENV="production" ;;
+            prod) ENV="production" ;;
+            uat) ENV="uat" ;;
+            qa) ENV="qa" ;;
+            dev) ENV="dev" ;;
+            *) ENV="dev" ;;  # default to dev for feature branches
+          esac
+          echo "env_name=$ENV" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Log environment info
+        run: |
+          echo "Target branch: ${{ steps.set-env.outputs.branch }}"
+          echo "Target environment: ${{ steps.set-env.outputs.env_name }}"
+
+      # Set per-environment credentials into environment for subsequent steps
+      - name: Set credentials for DEV
+        if: ${{ steps.set-env.outputs.env_name == 'dev' }}
+        run: |
+          echo "ENV_NAME=dev" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_DEV }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_DEV }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set credentials for QA
+        if: ${{ steps.set-env.outputs.env_name == 'qa' }}
+        run: |
+          echo "ENV_NAME=qa" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_QA }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_QA }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set credentials for UAT
+        if: ${{ steps.set-env.outputs.env_name == 'uat' }}
+        run: |
+          echo "ENV_NAME=uat" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_UAT }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_UAT }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set credentials for PRODUCTION
+        if: ${{ steps.set-env.outputs.env_name == 'production' }}
+        run: |
+          echo "ENV_NAME=production" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_PRODUCTION }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_PRODUCTION }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      # Fallback to repository-level secrets if environment-specific secrets aren't set
+      - name: Fallback credentials
+        if: ${{ env.TF_VAR_project == '' || env.GOOGLE_CREDENTIALS == '' }}
+        run: |
+          echo "ENV_NAME=${{ steps.set-env.outputs.env_name }}" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set up Cloud SDK (for gcloud)
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: "432.0.0"
+          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+          project_id: ${{ env.TF_VAR_project }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
+
+      - name: Terraform fmt (check)
+        run: terraform -chdir=terraform fmt -check
+
+      - name: Terraform init (backend)
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/${{ env.ENV_NAME }}"
+
+      - name: Terraform validate
+        run: terraform -chdir=terraform validate
+
+      - name: TFLint (optional)
+        uses: terraform-linters/tflint-action@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          config_file: terraform/.tflint.hcl
+
+      - name: Terraform plan (save plan file)
+        run: |
+          terraform -chdir=terraform plan -out=tfplan -input=false \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="region=${{ secrets.GCP_REGION }}" \
+            -var="zone=${{ secrets.GCP_ZONE }}" \
+            -var="environment=${{ env.ENV_NAME }}"
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan-${{ env.ENV_NAME }}
+          path: terraform/tfplan

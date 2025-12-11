@@ -1,0 +1,99 @@
+name: "Terraform Destroy (manual, per-environment)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment to destroy (dev, qa, uat, production)'
+        required: true
+        default: dev
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  destroy:
+    name: Destroy infrastructure (MANUAL)
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set target environment
+        id: set-env
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          case "$ENV" in
+            main|prod) ENV_NAME="production" ;;
+            production) ENV_NAME="production" ;;
+            uat) ENV_NAME="uat" ;;
+            qa) ENV_NAME="qa" ;;
+            dev) ENV_NAME="dev" ;;
+            *) ENV_NAME="dev" ;;
+          esac
+          echo "ENV_NAME=$ENV_NAME" >> $GITHUB_OUTPUT
+
+      - name: Set credentials for DEV
+        if: ${{ steps.set-env.outputs.ENV_NAME == 'dev' }}
+        run: |
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_DEV }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_DEV }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set credentials for QA
+        if: ${{ steps.set-env.outputs.ENV_NAME == 'qa' }}
+        run: |
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_QA }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_QA }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set credentials for UAT
+        if: ${{ steps.set-env.outputs.ENV_NAME == 'uat' }}
+        run: |
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_UAT }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_UAT }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set credentials for PRODUCTION
+        if: ${{ steps.set-env.outputs.ENV_NAME == 'production' }}
+        run: |
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_PRODUCTION }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY_PRODUCTION }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Fallback credentials (if env-specific missing)
+        if: ${{ env.TF_VAR_project == '' || env.GOOGLE_CREDENTIALS == '' }}
+        run: |
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
+          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
+          echo "${{ secrets.GCP_SA_KEY }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+          project_id: ${{ env.TF_VAR_project }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
+
+      - name: Terraform init (backend)
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/${{ steps.set-env.outputs.ENV_NAME }}"
+
+      - name: Terraform destroy (auto-approve)
+        run: |
+          terraform -chdir=terraform destroy -auto-approve \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="environment=${{ steps.set-env.outputs.ENV_NAME }}"
