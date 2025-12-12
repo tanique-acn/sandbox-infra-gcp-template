@@ -93,8 +93,10 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Authenticate to Google Cloud
+        # Use printf -n to avoid a trailing newline from 'echo'
+        # Use 'tr -d "\n"' to remove any potential newlines from the secret value itself
         run: |
-          echo "${{ env.GOOGLE_CREDENTIALS }}" | base64 --decode > gcp_creds.json
+          printf -n "${{ env.GOOGLE_CREDENTIALS }}" | tr -d '\n' | base64 --decode > gcp_creds.json
         
       - name: Set up Cloud SDK (for gcloud)
         # Use a supported, newer version like v2 or v3
