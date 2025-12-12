@@ -1,7 +1,7 @@
 variable "project" {
   description = "GCP project ID"
   type        = string
-  default     = ""
+  default     = "sandbox-dev-480919"
 }
 
 variable "region" {
@@ -31,7 +31,7 @@ variable "env_prefix" {
 variable "network_name" {
   description = "Base VPC network name (a suffix with environment will be added)"
   type        = string
-  default     = "sandbox-network"
+  default     = "sandbox-vpc"
 }
 
 variable "instance_name" {
