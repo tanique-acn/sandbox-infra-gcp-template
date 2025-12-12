@@ -6,7 +6,7 @@
 #
 # Usage:
 #   ./scripts/setup_github_secrets.sh \
-#     --sa-key-path ./gcp-sa.json \
+#     --sa-key-path ./env-keys/gcp-sa.json \
 #     --project global-fallback-project \
 #     --project-dev dev-project-id \
 #     --project-qa qa-project-id \
@@ -16,8 +16,8 @@
 #     --zone us-central1-a \
 #     --tf-bucket my-tf-state-bucket \
 #     --tf-prefix terraform/state \
-#     [--repo owner/repo] \
-#     [--env-sa-keys-dir ./env-keys]
+#     --repo owner/repo \
+#     --env-sa-keys-dir ./env-keys
 #
 # If --env-sa-keys-dir contains dev.json, qa.json, uat.json, production.json those will be uploaded
 # as GCP_SA_KEY_DEV, etc. If not provided, the main --sa-key-path will be used for all envs.

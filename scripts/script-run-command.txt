@@ -1,0 +1,13 @@
+./setup_github_secrets.sh \
+  --sa-key-path ./env-keys/gcp-sa.json \
+  --project sandbox-dev-480919 \
+  --project-dev sandbox-dev-480919 \
+  --project-qa sandbox-dev-480919 \
+  --project-uat sandbox-dev-480919 \
+  --project-prod sandbox-dev-480919 \
+  --region us-central1 \
+  --zone us-central1-a \
+  --tf-bucket sandbox-dev-480919-tf-state-5d0ea63e \
+  --tf-prefix terraform/state \
+  --repo tanique-acn/sandbox-infra-gcp-template \
+  --env-sa-keys-dir ./env-keys
