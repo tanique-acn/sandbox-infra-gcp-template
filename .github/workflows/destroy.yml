@@ -1,10 +1,10 @@
-name: "Terraform Destroy (manual, per-environment)"
+name: "Terraform Destroy"
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Target environment to destroy (dev, qa, uat, production)'
+        description: 'Target Environment to Destroy (dev, qa, uat, production)'
         required: true
         default: dev
         type: string
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   destroy:
-    name: Destroy infrastructure (MANUAL)
+    name: Destroy infrastructure
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
     steps:

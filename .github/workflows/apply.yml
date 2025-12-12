@@ -1,14 +1,8 @@
-name: "Terraform CD (per-environment apply)"
+name: "Terraform Apply"
 
 on:
-  push:
-    branches:
-      - dev
-      - qa
-      - uat
-      - main
   workflow_run:
-    workflows: ["Terraform CI (validate & plan)"]
+    workflows: ["Terraform Plan"]
     types:
       - completed
 
@@ -22,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev')
     env:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_DEV }}
@@ -66,7 +59,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: qa
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/qa') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'qa')
     env:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_QA }}
@@ -110,7 +102,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: uat
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/uat') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'uat')
     steps:
       - name: Waiting for UAT approval
@@ -121,7 +112,6 @@ jobs:
     needs: wait-uat-approval
     runs-on: ubuntu-latest
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/uat') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'uat')
     env:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_UAT }}
@@ -165,7 +155,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     steps:
       - name: Waiting for Production approval
@@ -176,7 +165,6 @@ jobs:
     needs: wait-production-approval
     runs-on: ubuntu-latest
     if: >
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     env:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_PRODUCTION }}
