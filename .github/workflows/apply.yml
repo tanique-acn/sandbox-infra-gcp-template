@@ -1,216 +1,216 @@
-# name: "Terraform CD (per-environment apply)"
+name: "Terraform CD (per-environment apply)"
 
-# on:
-#   push:
-#     branches:
-#       - dev
-#       - qa
-#       - uat
-#       - main
-#   workflow_run:
-#     workflows: ["Terraform CI (validate & plan)"]
-#     types:
-#       - completed
+on:
+  push:
+    branches:
+      - dev
+      - qa
+      - uat
+      - main
+  workflow_run:
+    workflows: ["Terraform CI (validate & plan)"]
+    types:
+      - completed
 
-# permissions:
-#   contents: read
-#   actions: read
+permissions:
+  contents: read
+  actions: read
 
-# jobs:
-#   apply-dev:
-#     name: Apply to DEV
-#     runs-on: ubuntu-latest
-#     environment: dev
-#     if: >
-#       (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
-#       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev')
-#     env:
-#       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_DEV }}
-#       TF_VAR_project: ${{ secrets.GCP_PROJECT_DEV }}
-#       TF_VAR_region: ${{ secrets.GCP_REGION }}
-#       TF_VAR_zone: ${{ secrets.GCP_ZONE }}
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
+jobs:
+  apply-dev:
+    name: Apply to DEV
+    runs-on: ubuntu-latest
+    environment: dev
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'dev')
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_DEV }}
+      TF_VAR_project: ${{ secrets.GCP_PROJECT_DEV }}
+      TF_VAR_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_zone: ${{ secrets.GCP_ZONE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v1
-#         with:
-#           service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
-#           project_id: ${{ env.TF_VAR_project }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+          project_id: ${{ env.TF_VAR_project }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: '1.5.7'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
 
-#       - name: Terraform init (backend)
-#         run: |
-#           terraform -chdir=terraform init -input=false \
-#             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-#             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/dev"
+      - name: Terraform init (backend)
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/dev"
 
-#       - name: Terraform plan (re-run)
-#         run: |
-#           terraform -chdir=terraform plan -out=tfplan -input=false \
-#             -var="project=${{ env.TF_VAR_project }}" \
-#             -var="region=${{ env.TF_VAR_region }}" \
-#             -var="zone=${{ env.TF_VAR_zone }}" \
-#             -var="environment=dev"
+      - name: Terraform plan (re-run)
+        run: |
+          terraform -chdir=terraform plan -out=tfplan -input=false \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="region=${{ env.TF_VAR_region }}" \
+            -var="zone=${{ env.TF_VAR_zone }}" \
+            -var="environment=dev"
 
-#       - name: Terraform apply
-#         run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
+      - name: Terraform apply
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
 
-#   apply-qa:
-#     name: Apply to QA
-#     runs-on: ubuntu-latest
-#     environment: qa
-#     if: >
-#       (github.event_name == 'push' && github.ref == 'refs/heads/qa') ||
-#       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'qa')
-#     env:
-#       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_QA }}
-#       TF_VAR_project: ${{ secrets.GCP_PROJECT_QA }}
-#       TF_VAR_region: ${{ secrets.GCP_REGION }}
-#       TF_VAR_zone: ${{ secrets.GCP_ZONE }}
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
+  apply-qa:
+    name: Apply to QA
+    runs-on: ubuntu-latest
+    environment: qa
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/qa') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'qa')
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_QA }}
+      TF_VAR_project: ${{ secrets.GCP_PROJECT_QA }}
+      TF_VAR_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_zone: ${{ secrets.GCP_ZONE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v1
-#         with:
-#           service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
-#           project_id: ${{ env.TF_VAR_project }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+          project_id: ${{ env.TF_VAR_project }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: '1.5.7'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
 
-#       - name: Terraform init (backend)
-#         run: |
-#           terraform -chdir=terraform init -input=false \
-#             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-#             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/qa"
+      - name: Terraform init (backend)
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/qa"
 
-#       - name: Terraform plan (re-run)
-#         run: |
-#           terraform -chdir=terraform plan -out=tfplan -input=false \
-#             -var="project=${{ env.TF_VAR_project }}" \
-#             -var="region=${{ env.TF_VAR_region }}" \
-#             -var="zone=${{ env.TF_VAR_zone }}" \
-#             -var="environment=qa"
+      - name: Terraform plan (re-run)
+        run: |
+          terraform -chdir=terraform plan -out=tfplan -input=false \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="region=${{ env.TF_VAR_region }}" \
+            -var="zone=${{ env.TF_VAR_zone }}" \
+            -var="environment=qa"
 
-#       - name: Terraform apply
-#         run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
+      - name: Terraform apply
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
 
-#   wait-uat-approval:
-#     name: Await UAT approval
-#     runs-on: ubuntu-latest
-#     environment: uat
-#     if: >
-#       (github.event_name == 'push' && github.ref == 'refs/heads/uat') ||
-#       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'uat')
-#     steps:
-#       - name: Waiting for UAT approval
-#         run: echo "This job will pause until the UAT environment approval is granted in GitHub."
+  wait-uat-approval:
+    name: Await UAT approval
+    runs-on: ubuntu-latest
+    environment: uat
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/uat') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'uat')
+    steps:
+      - name: Waiting for UAT approval
+        run: echo "This job will pause until the UAT environment approval is granted in GitHub."
 
-#   apply-uat:
-#     name: Apply to UAT (runs after UAT approval)
-#     needs: wait-uat-approval
-#     runs-on: ubuntu-latest
-#     if: >
-#       (github.event_name == 'push' && github.ref == 'refs/heads/uat') ||
-#       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'uat')
-#     env:
-#       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_UAT }}
-#       TF_VAR_project: ${{ secrets.GCP_PROJECT_UAT }}
-#       TF_VAR_region: ${{ secrets.GCP_REGION }}
-#       TF_VAR_zone: ${{ secrets.GCP_ZONE }}
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
+  apply-uat:
+    name: Apply to UAT (runs after UAT approval)
+    needs: wait-uat-approval
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/uat') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'uat')
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_UAT }}
+      TF_VAR_project: ${{ secrets.GCP_PROJECT_UAT }}
+      TF_VAR_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_zone: ${{ secrets.GCP_ZONE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v1
-#         with:
-#           service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
-#           project_id: ${{ env.TF_VAR_project }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+          project_id: ${{ env.TF_VAR_project }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: '1.5.7'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
 
-#       - name: Terraform init (backend)
-#         run: |
-#           terraform -chdir=terraform init -input=false \
-#             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-#             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/uat"
+      - name: Terraform init (backend)
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/uat"
 
-#       - name: Terraform plan (re-run)
-#         run: |
-#           terraform -chdir=terraform plan -out=tfplan -input=false \
-#             -var="project=${{ env.TF_VAR_project }}" \
-#             -var="region=${{ env.TF_VAR_region }}" \
-#             -var="zone=${{ env.TF_VAR_zone }}" \
-#             -var="environment=uat"
+      - name: Terraform plan (re-run)
+        run: |
+          terraform -chdir=terraform plan -out=tfplan -input=false \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="region=${{ env.TF_VAR_region }}" \
+            -var="zone=${{ env.TF_VAR_zone }}" \
+            -var="environment=uat"
 
-#       - name: Terraform apply
-#         run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
+      - name: Terraform apply
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
 
-#   wait-production-approval:
-#     name: Await Production approval
-#     runs-on: ubuntu-latest
-#     environment: production
-#     if: >
-#       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-#       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-#     steps:
-#       - name: Waiting for Production approval
-#         run: echo "This job will pause until the Production environment approval is granted in GitHub."
+  wait-production-approval:
+    name: Await Production approval
+    runs-on: ubuntu-latest
+    environment: production
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    steps:
+      - name: Waiting for Production approval
+        run: echo "This job will pause until the Production environment approval is granted in GitHub."
 
-#   apply-production:
-#     name: Apply to PRODUCTION (runs after Production approval)
-#     needs: wait-production-approval
-#     runs-on: ubuntu-latest
-#     if: >
-#       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-#       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-#     env:
-#       GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_PRODUCTION }}
-#       TF_VAR_project: ${{ secrets.GCP_PROJECT_PRODUCTION }}
-#       TF_VAR_region: ${{ secrets.GCP_REGION }}
-#       TF_VAR_zone: ${{ secrets.GCP_ZONE }}
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
+  apply-production:
+    name: Apply to PRODUCTION (runs after Production approval)
+    needs: wait-production-approval
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SA_KEY_PRODUCTION }}
+      TF_VAR_project: ${{ secrets.GCP_PROJECT_PRODUCTION }}
+      TF_VAR_region: ${{ secrets.GCP_REGION }}
+      TF_VAR_zone: ${{ secrets.GCP_ZONE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-#       - name: Set up Cloud SDK
-#         uses: google-github-actions/setup-gcloud@v1
-#         with:
-#           service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
-#           project_id: ${{ env.TF_VAR_project }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+          project_id: ${{ env.TF_VAR_project }}
 
-#       - name: Setup Terraform
-#         uses: hashicorp/setup-terraform@v2
-#         with:
-#           terraform_version: '1.5.7'
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.5.7'
 
-#       - name: Terraform init (backend)
-#         run: |
-#           terraform -chdir=terraform init -input=false \
-#             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-#             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/production"
+      - name: Terraform init (backend)
+        run: |
+          terraform -chdir=terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/production"
 
-#       - name: Terraform plan (re-run)
-#         run: |
-#           terraform -chdir=terraform plan -out=tfplan -input=false \
-#             -var="project=${{ env.TF_VAR_project }}" \
-#             -var="region=${{ env.TF_VAR_region }}" \
-#             -var="zone=${{ env.TF_VAR_zone }}" \
-#             -var="environment=production"
+      - name: Terraform plan (re-run)
+        run: |
+          terraform -chdir=terraform plan -out=tfplan -input=false \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="region=${{ env.TF_VAR_region }}" \
+            -var="zone=${{ env.TF_VAR_zone }}" \
+            -var="environment=production"
 
-#       - name: Terraform apply
-#         run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
+      - name: Terraform apply
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
