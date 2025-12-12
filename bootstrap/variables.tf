@@ -1,6 +1,7 @@
 variable "project" {
   description = "GCP project ID to create resources in"
   type        = string
+  default = "sandbox-dev-480919"
 }
 
 variable "region" {
@@ -16,7 +17,7 @@ variable "state_bucket_name" {
 }
 
 variable "service_account_id" {
-  description = "ID for the bootstrap service account (will become email ${service_account_id}@${project}.iam.gserviceaccount.com)"
+  description = "ID for the bootstrap service account (will become email {service_account_id}@{project}.iam.gserviceaccount.com)"
   type        = string
   default     = "tf-bootstrap-sa"
 }
@@ -24,5 +25,5 @@ variable "service_account_id" {
 variable "create_sa_key" {
   description = "Create and output a service account key (sensitive). Set to false if you prefer to create key manually."
   type        = bool
-  default     = true
+  default     = false
 }

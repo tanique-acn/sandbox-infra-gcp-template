@@ -16,6 +16,7 @@ terraform.rc
 *.credentials
 *.key
 *.pem
+env-keys
 
 # GitHub Actions artifacts / caches
 /.github/actions/cache

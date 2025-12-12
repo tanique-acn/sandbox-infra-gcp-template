@@ -64,6 +64,66 @@ resource "google_project_iam_member" "sa_compute_admin" {
   member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
 }
 
+resource "google_project_iam_member" "sa_bigquery_admin" {
+  project = var.project
+  role    = "roles/bigquery.admin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_cloudrun_admin" {
+  project = var.project
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_cloudsql_admin" {
+  project = var.project
+  role    = "roles/cloudsql.admin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_gke_admin" {
+  project = var.project
+  role    = "roles/container.admin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_project_iam_admin" {
+  project = var.project
+  role    = "roles/resourcemanager.projectIamAdmin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_compute_network_admin" {
+  project = var.project
+  role    = "roles/compute.networkAdmin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_iam_network_admin" {
+  project = var.project
+  role    = "roles/iam.networkAdmin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_secret_admin" {
+  project = var.project
+  role    = "roles/secretmanager.admin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_service_network_admin" {
+  project = var.project
+  role    = "roles/servicenetworking.networksAdmin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
+resource "google_project_iam_member" "sa_service_usage_admin" {
+  project = var.project
+  role    = "roles/serviceusage.serviceUsageAdmin"
+  member  = "serviceAccount:${google_service_account.bootstrap_sa.email}"
+}
+
 # Optional: create a service account key (sensitive). If you prefer additional security,
 # set create_sa_key = false and create a key manually using gcloud on a trusted machine.
 resource "google_service_account_key" "bootstrap_key" {

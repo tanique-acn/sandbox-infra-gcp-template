@@ -9,8 +9,8 @@ Summary of important features
 - Bootstrapping folder to create the Terraform state bucket and a service account (run from a trusted machine)
 - A setup script to create repository and per-environment secrets and environment placeholders (uses GitHub CLI `gh`)
 - Workflows:
-  - .github/workflows/ci.yml — CI: validate, lint, plan (artifact)
-  - .github/workflows/cd.yml — CD: re-plan and apply per-environment, with approval jobs for UAT/Prod
+  - .github/workflows/plan.yml — CI: validate, lint, plan (artifact)
+  - .github/workflows/apply.yml — CD: re-plan and apply per-environment, with approval jobs for UAT/Prod
   - .github/workflows/destroy.yml — Manual destroy per-environment
 
 Why README needed updating
@@ -85,12 +85,12 @@ Setup script (automates creating secrets and environment placeholders)
   - The script will create environment placeholders (dev, qa, uat, production). Protection rules/required reviewers must be configured separately.
 
 Workflows behavior (quick)
-- CI (ci.yml):
+- CI (plan.yml):
   - Runs on pushes and PRs to any branch.
   - Detects target environment from branch name.
   - Loads per-environment credentials from secrets (falling back to repo-level secrets if necessary).
   - Runs fmt, init (backend), validate, lint, plan and uploads plan artifact.
-- CD (cd.yml):
+- CD (apply.yml):
   - Triggers on pushes to environment branches and on successful CI workflow runs.
   - Runs separate jobs for dev, qa, uat and production.
   - DEV and QA apply automatically (DEV expected to be low-friction; QA optional required reviewers in environment settings).
@@ -140,8 +140,8 @@ Troubleshooting
 - If you want environment-scoped secrets instead of repo-level per-environment secrets, the setup script can be adapted; note that environment-scoped secrets are created in the UI or via the API.
 
 Files of interest
-- .github/workflows/ci.yml
-- .github/workflows/cd.yml
+- .github/workflows/plan.yml
+- .github/workflows/apply.yml
 - .github/workflows/destroy.yml
 - terraform/ (Terraform code)
 - terraform/envs/ (example tfvars per environment for local testing)
