@@ -49,7 +49,7 @@ variable "machine_type" {
 variable "environment_machine_types" {
   description = "Optional per-environment overrides for machine types"
   type        = map(string)
-  default     = {
+  default = {
     dev        = "e2-micro"
     qa         = "e2-small"
     uat        = "e2-small"
