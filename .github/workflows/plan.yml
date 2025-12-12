@@ -92,12 +92,27 @@ jobs:
           echo "${{ secrets.GCP_SA_KEY }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Set up Cloud SDK (for gcloud)
-        uses: google-github-actions/setup-gcloud@v1
+      - name: Authenticate to Google Cloud
+        # Use the dedicated auth action first
+        uses: google-github-actions/auth@v2 
         with:
-          version: "432.0.0"
-          service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
-          project_id: ${{ env.TF_VAR_project }}
+          credentials_json: ${{ env.GOOGLE_CREDENTIALS }}
+          # The auth action automatically sets ADC which setup-gcloud uses
+          # No project_id is needed here if it's in the credentials JSON
+
+      - name: Set up Cloud SDK (for gcloud)
+        # Use a supported, newer version like v2 or v3
+        uses: google-github-actions/setup-gcloud@v2 
+        with:
+          version: ">= 432.0.0"
+          # service_account_key and project_id inputs are typically deprecated in favor of the 'auth' action
+      
+        #   - name: Set up Cloud SDK (for gcloud)
+        # uses: google-github-actions/setup-gcloud@v1
+        # with:
+        #   version: "432.0.0"
+        #   service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
+        #   project_id: ${{ env.TF_VAR_project }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -116,16 +131,13 @@ jobs:
       - name: Terraform validate
         run: terraform -chdir=terraform validate
 
-      - name: Setup TFLint
+      - name: Setup and Run TFLint
         # Use the official setup action to install TFLint
         uses: terraform-linters/setup-tflint@v3
         with:
-          # Caching helps speed up subsequent runs
-          cache: true
-
-      - name: Run TFLint
-        # Run TFLint using a standard 'run' step after it has been installed
-        run: tflint --config-file ${{ github.workspace }}/terraform/.tflint.hcl
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          config_file: terraform/.tflint.hcl
+          cache: true # Caching helps speed up subsequent runs
 
       - name: Terraform plan (save plan file)
         run: |
