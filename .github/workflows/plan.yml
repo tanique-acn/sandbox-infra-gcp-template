@@ -116,11 +116,16 @@ jobs:
       - name: Terraform validate
         run: terraform -chdir=terraform validate
 
-      - name: TFLint (optional)
-        uses: terraform-linters/tflint-action@v2
+      - name: Setup TFLint
+        # Use the official setup action to install TFLint
+        uses: terraform-linters/setup-tflint@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          config_file: terraform/.tflint.hcl
+          # Caching helps speed up subsequent runs
+          cache: true
+
+      - name: Run TFLint
+        # Run TFLint using a standard 'run' step after it has been installed
+        run: tflint --config-file ${{ github.workspace }}/terraform/.tflint.hcl
 
       - name: Terraform plan (save plan file)
         run: |
