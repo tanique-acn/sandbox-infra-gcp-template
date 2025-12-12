@@ -71,11 +71,11 @@ resource "google_compute_instance" "vm" {
   tags = local.resource_tags
 }
 
-# Example: add optional resource which changes by environment flag
-# (This demonstrates how env_flags map can be used)
-resource "google_storage_bucket_iam_member" "app_bucket_public" {
-  count  = contains(keys(var.env_flags), "make_bucket_public") && tostring(var.env_flags["make_bucket_public"]) == "true" ? 1 : 0
-  bucket = google_storage_bucket.app_bucket.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
+# # Example: add optional resource which changes by environment flag
+# # (This demonstrates how env_flags map can be used)
+# resource "google_storage_bucket_iam_member" "app_bucket_public" {
+#   count  = contains(keys(var.env_flags), "make_bucket_public") && tostring(var.env_flags["make_bucket_public"]) == "true" ? 1 : 0
+#   bucket = google_storage_bucket.app_bucket.name
+#   role   = "roles/storage.objectViewer"
+#   member = "allUsers"
+# }
