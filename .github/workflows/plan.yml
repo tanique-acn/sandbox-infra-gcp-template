@@ -13,15 +13,14 @@ permissions:
   id-token: write
 
 jobs:
-  validate-and-plan:
-    name: Validate, Lint and Plan
+  environment-setup:
+    name: Checkout and Set Target Environment
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Determine target environment
+      - name: Determine Target Environment
         id: set-env
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -50,6 +49,9 @@ jobs:
     if: github.ref_name == 'dev'
     environment: dev 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set Secrets for DEV
         run: |
           echo "ENV_NAME=dev" >> $GITHUB_ENV
