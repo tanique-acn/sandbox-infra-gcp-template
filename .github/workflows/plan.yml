@@ -93,27 +93,17 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Authenticate to Google Cloud
-        # Use the dedicated auth action first
-        uses: google-github-actions/auth@v2 
-        with:
-          credentials_json: ${{ env.GOOGLE_CREDENTIALS }}
-          # The auth action automatically sets ADC which setup-gcloud uses
-          # No project_id is needed here if it's in the credentials JSON
-
+        run: |
+          echo "${{ env.GOOGLE_CREDENTIALS }}" | base64 --decode > gcp_creds.json
+        
       - name: Set up Cloud SDK (for gcloud)
         # Use a supported, newer version like v2 or v3
         uses: google-github-actions/setup-gcloud@v2 
         with:
           version: ">= 432.0.0"
-          # service_account_key and project_id inputs are typically deprecated in favor of the 'auth' action
-      
-        #   - name: Set up Cloud SDK (for gcloud)
-        # uses: google-github-actions/setup-gcloud@v1
-        # with:
-        #   version: "432.0.0"
-        #   service_account_key: ${{ env.GOOGLE_CREDENTIALS }}
-        #   project_id: ${{ env.TF_VAR_project }}
-
+          # Tell setup-gcloud to use the newly created file
+          service_account_key: gcp_creds.json
+        
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
