@@ -45,9 +45,9 @@ jobs:
           echo "Target branch: ${{ steps.set-env.outputs.branch }}"
           echo "Target environment: ${{ steps.set-env.outputs.env_name }}"
 
-  dev-env-setup:
+  dev-tf-plan:
     runs-on: ubuntu-latest
-    if: ${{ steps.set-env.outputs.env_name == 'dev' }}
+    if: github.ref_name == 'dev'
     environment: dev 
     steps:
       - name: Set Secrets for DEV
