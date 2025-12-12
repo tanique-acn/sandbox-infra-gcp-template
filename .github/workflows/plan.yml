@@ -92,20 +92,34 @@ jobs:
           echo "${{ secrets.GCP_SA_KEY }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Authenticate to Google Cloud
-        # Use printf -n to avoid a trailing newline from 'echo'
-        # Use 'tr -d "\n"' to remove any potential newlines from the secret value itself
-        run: |
-          printf -n "${{ env.GOOGLE_CREDENTIALS }}" | tr -d '\n' | base64 --decode > gcp_creds.json
+      # - name: Authenticate to Google Cloud
+      #   # Use printf -n to avoid a trailing newline from 'echo'
+      #   # Use 'tr -d "\n"' to remove any potential newlines from the secret value itself
+      #   run: |
+      #     printf -n "${{ env.GOOGLE_CREDENTIALS }}" | tr -d '\n' | base64 --decode > gcp_creds.json
         
+      # - name: Set up Cloud SDK (for gcloud)
+      #   # Use a supported, newer version like v2 or v3
+      #   uses: google-github-actions/setup-gcloud@v2 
+      #   with:
+      #     version: ">= 432.0.0"
+      #     # Tell setup-gcloud to use the newly created file
+      #     service_account_key: gcp_creds.json
+      - name: Authenticate to Google Cloud
+        # Use the dedicated auth action
+        uses: google-github-actions/auth@v2
+        with:
+          # Ensure you use the correct secret name here
+          credentials_json: ${{ env.GOOGLE_CREDENTIALS }} 
+          # The auth action automatically sets GOOGLE_APPLICATION_CREDENTIALS env var
+          # to point to a temporary file it creates.
+
       - name: Set up Cloud SDK (for gcloud)
-        # Use a supported, newer version like v2 or v3
+        # Use a supported version
         uses: google-github-actions/setup-gcloud@v2 
         with:
           version: ">= 432.0.0"
-          # Tell setup-gcloud to use the newly created file
-          service_account_key: gcp_creds.json
-        
+            
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
