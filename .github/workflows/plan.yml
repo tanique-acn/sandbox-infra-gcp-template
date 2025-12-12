@@ -45,68 +45,29 @@ jobs:
           echo "Target branch: ${{ steps.set-env.outputs.branch }}"
           echo "Target environment: ${{ steps.set-env.outputs.env_name }}"
 
-      # Set per-environment credentials into environment for subsequent steps
-      - name: Set credentials for DEV
-        if: ${{ steps.set-env.outputs.env_name == 'dev' }}
+  dev-env-setup:
+    runs-on: ubuntu-latest
+    if: ${{ steps.set-env.outputs.env_name == 'dev' }}
+    environment: dev 
+    steps:
+      - name: Set Secrets for DEV
         run: |
           echo "ENV_NAME=dev" >> $GITHUB_ENV
           echo "TF_VAR_project=${{ secrets.GCP_PROJECT_DEV }}" >> $GITHUB_ENV
-          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.GCP_SA_KEY_DEV }}" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
 
-      - name: Set credentials for QA
-        if: ${{ steps.set-env.outputs.env_name == 'qa' }}
-        run: |
-          echo "ENV_NAME=qa" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_QA }}" >> $GITHUB_ENV
-          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.GCP_SA_KEY_QA }}" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Set credentials for UAT
-        if: ${{ steps.set-env.outputs.env_name == 'uat' }}
-        run: |
-          echo "ENV_NAME=uat" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_UAT }}" >> $GITHUB_ENV
-          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.GCP_SA_KEY_UAT }}" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Set credentials for PRODUCTION
-        if: ${{ steps.set-env.outputs.env_name == 'production' }}
-        run: |
-          echo "ENV_NAME=production" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_PRODUCTION }}" >> $GITHUB_ENV
-          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.GCP_SA_KEY_PRODUCTION }}" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      # Fallback to repository-level secrets if environment-specific secrets aren't set
-      - name: Fallback credentials
-        if: ${{ env.TF_VAR_project == '' || env.GOOGLE_CREDENTIALS == '' }}
-        run: |
-          echo "ENV_NAME=${{ steps.set-env.outputs.env_name }}" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
-          echo "GOOGLE_CREDENTIALS<<EOF" >> $GITHUB_ENV
-          echo "${{ secrets.GCP_SA_KEY }}" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-      - name: Authenticate to Google Cloud
-        # Use the dedicated auth action
+      - name: Authenticate to Google Cloud for DEV
         uses: google-github-actions/auth@v2
         with:
-          # Ensure you use the correct secret name here
-          credentials_json: ${{ env.GOOGLE_CREDENTIALS }} 
-          # The auth action automatically sets GOOGLE_APPLICATION_CREDENTIALS env var
-          # to point to a temporary file it creates.
+          # This automatically looks up the "GCP_SA_KEY" secret defined 
+          # specifically within the "dev" environment settings in the GitHub UI.
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK (for gcloud)
-        # Use a supported version
-        uses: google-github-actions/setup-gcloud@v2 
+        uses: google-github-actions/setup-gcloud@v2
         with:
           version: ">= 432.0.0"
-            
+          # This action automatically uses the credentials set by the 'auth' step
+          
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
