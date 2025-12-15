@@ -60,7 +60,7 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          terraform -chdir=terraform plan -out=terraform/tfplan -input=false \
+          terraform -chdir=terraform plan -out=tfplan -input=false \
             -var="project=${{ env.TF_VAR_project }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
@@ -95,12 +95,6 @@ jobs:
         run: |
           echo "ENV_NAME=${{github.ref_name}}" >> $GITHUB_ENV
           echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
-      
-      - name: Download Plan Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: tfplan-${{ env.ENV_NAME }}
-          path: terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -112,6 +106,14 @@ jobs:
           terraform -chdir=terraform init -input=false \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/${{ env.ENV_NAME }}"
-
+      
+      - name: Terraform Plan
+        run: |
+          terraform -chdir=terraform plan -out=tfplan -input=false \
+            -var="project=${{ env.TF_VAR_project }}" \
+            -var="region=${{ secrets.GCP_REGION }}" \
+            -var="zone=${{ secrets.GCP_ZONE }}" \
+            -var="environment=${{ env.ENV_NAME }}"
+            
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan-${{ env.ENV_NAME }}
