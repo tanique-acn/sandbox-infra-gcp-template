@@ -114,4 +114,4 @@ jobs:
             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/${{ env.ENV_NAME }}"
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan-${{ env.ENV_NAME }}
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
