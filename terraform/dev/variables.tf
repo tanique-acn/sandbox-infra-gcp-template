@@ -17,7 +17,7 @@ variable "zone" {
 }
 
 variable "environment" {
-  description = "Deployment environment (dev, qa, uat, production)"
+  description = "Deployment Environment"
   type        = string
   default     = "dev"
 }
