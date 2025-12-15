@@ -7,12 +7,12 @@
 #
 # Example static backend block (not recommended to commit with real names):
 #
-# terraform {
-#   backend "gcs" {
-#     bucket = "sandbox-dev-480919-tf-state-5d0ea63e"
-#     prefix = "terraform/state"
-#   }
-# }
+terraform {
+  backend "gcs" {
+    bucket = "sandbox-dev-480919-tf-state-5d0ea63e"
+    prefix = "terraform/state"
+  }
+}
 #
 # In CI workflows we pass:
 # -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
