@@ -53,7 +53,7 @@ jobs:
         uses: terraform-linters/setup-tflint@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          config_file: terraform/.tflint.hcl
+          config_file: terraform/dev/.tflint.hcl
           cache: true # Caching helps speed up subsequent runs
 
       - name: Terraform Plan
