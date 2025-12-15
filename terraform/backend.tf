@@ -9,8 +9,8 @@
 #
 # terraform {
 #   backend "gcs" {
-#     bucket = "my-terraform-state-bucket"
-#     prefix = "terraform/state/dev"
+#     bucket = "sandbox-dev-480919-tf-state-5d0ea63e"
+#     prefix = "terraform/state"
 #   }
 # }
 #
