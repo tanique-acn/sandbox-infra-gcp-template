@@ -96,6 +96,16 @@ jobs:
           echo "ENV_NAME=${{github.ref_name}}" >> $GITHUB_ENV
           echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          version: ">= 432.0.0"
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -114,6 +124,6 @@ jobs:
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
             -var="environment=${{ env.ENV_NAME }}"
-            
+
       - name: Terraform Apply
         run: terraform -chdir=terraform apply -input=false -auto-approve tfplan-${{ env.ENV_NAME }}
