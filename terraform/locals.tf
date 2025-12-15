@@ -15,7 +15,7 @@ locals {
   network_name_full  = "${var.network_name}-${local.env_label}"
   subnet_name_full   = "${local.network_name_full}-subnet"
   instance_name_full = "${var.instance_name}-${local.env_label}"
-  bucket_name_full   = var.bucket_name != "" ? var.bucket_name : "${local.name_prefix}-app-bucket-${random_id.bucket_suffix.hex}"
+  # bucket_name_full   = var.bucket_name != "" ? var.bucket_name : "${local.name_prefix}-app-bucket-${random_id.bucket_suffix.hex}"
 
   # additional tags always include environment
   resource_tags = distinct(concat(["env-${local.env_label}"], var.tags))
