@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   tf-plan:
+    name: Terraform Plan
     runs-on: ubuntu-latest
     if: github.ref_name == 'dev'
     environment: dev 
@@ -71,19 +72,19 @@ jobs:
           name: tfplan-${{ env.ENV_NAME }}
           path: terraform/tfplan
     
-  await-approval:
-    name: Await Manual Approval
-    runs-on: ubuntu-latest
-    needs: tf-plan
-    environment: dev      # <-- set the Environment that requires your pr-approvers team
-    steps:
-      - name: Waiting for Approval
-        run: echo "This Job Will Pause Until a Member of the PR-APPROVERS Group Accepts the Deployment."
+  # await-approval:
+  #   name: Await Manual Approval
+  #   runs-on: ubuntu-latest
+  #   needs: tf-plan
+  #   environment: dev      # <-- set the Environment that requires your pr-approvers team
+  #   steps:
+  #     - name: Waiting for Approval
+  #       run: echo "This Job Will Pause Until a Member of the PR-APPROVERS Group Accepts the Deployment."
   
   tf-apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
-    needs: await-approval
+    # needs: await-approval
     environment: dev
     steps:
       - name: Checkout
@@ -112,4 +113,4 @@ jobs:
             -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/${{ env.ENV_NAME }}"
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan-${{ env.ENV_NAME }}   
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan   
