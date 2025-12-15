@@ -18,5 +18,5 @@ locals {
   bucket_name_full   = var.bucket_name != "" ? var.bucket_name : "${local.name_prefix}-app-bucket-${random_id.bucket_suffix.hex}"
 
   # additional tags always include environment
-  resource_tags = distinct(concat(["env:${local.env_label}"], var.tags))
+  resource_tags = distinct(concat(["env-${local.env_label}"], var.tags))
 }
