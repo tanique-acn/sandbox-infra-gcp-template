@@ -60,7 +60,7 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          terraform -chdir=terraform plan -out=tfplan -input=false \
+          terraform -chdir=terraform plan -out=terraform/tfplan -input=false \
             -var="project=${{ env.TF_VAR_project }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
@@ -100,7 +100,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tfplan-${{ env.ENV_NAME }}
-          path: terraform/tfplan
+          path: terraform
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
