@@ -40,14 +40,14 @@ jobs:
           terraform_version: '1.5.7'
 
       - name: Terraform FMT
-        run: terraform -chdir=terraform fmt -check
+        run: terraform -chdir=terraform/dev fmt -check
 
       - name: Terraform Init
         run: |
-          terraform -chdir=terraform init -input=false
+          terraform -chdir=terraform/dev init -input=false
 
       - name: Terraform Validate
-        run: terraform -chdir=terraform validate
+        run: terraform -chdir=terraform/dev validate
 
       - name: Setup and Run TFLint
         uses: terraform-linters/setup-tflint@v3
@@ -58,7 +58,7 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          terraform -chdir=terraform plan -out=tfplan -input=false \
+          terraform -chdir=terraform/dev plan -out=tfplan -input=false \
             -var="project=${{ env.TF_VAR_project }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
@@ -68,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tfplan-${{ env.ENV_NAME }}
-          path: terraform/tfplan
+          path: terraform/dev/tfplan
     
   # await-approval:
   #   name: Await Manual Approval
@@ -111,15 +111,15 @@ jobs:
 
       - name: Terraform Init
         run: |
-          terraform -chdir=terraform init -input=false
+          terraform -chdir=terraform/dev init -input=false
       
       - name: Terraform Plan
         run: |
-          terraform -chdir=terraform plan -out=tfplan -input=false \
+          terraform -chdir=terraform/dev plan -out=tfplan -input=false \
             -var="project=${{ env.TF_VAR_project }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
             -var="environment=${{ env.ENV_NAME }}"
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan
+        run: terraform -chdir=terraform/dev apply -input=false -auto-approve tfplan
