@@ -84,6 +84,7 @@ jobs:
     name: Terraform Apply
     runs-on: ubuntu-latest
     needs: await-approval
+    environment: dev
     steps:
       - name: Checkout
         uses: actions/checkout@v4
