@@ -59,15 +59,15 @@ jobs:
       - name: Terraform Plan
         run: |
           terraform -chdir=terraform/dev plan -out=tfplan -input=false \
-            -var="project=${{ env.TF_VAR_project }}" \
+            -var="project=${{ secrets.GCP_PROJECT }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
-            -var="environment=${{ env.ENV_NAME }}"
+            -var="environment=${{ github.ref_name }}"
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ env.ENV_NAME }}
+          name: tfplan-${{ github.ref_name }}
           path: terraform/dev/tfplan
     
   # await-approval:
@@ -116,10 +116,10 @@ jobs:
       - name: Terraform Plan
         run: |
           terraform -chdir=terraform/dev plan -out=tfplan -input=false \
-            -var="project=${{ env.TF_VAR_project }}" \
+            -var="project=${{ secrets.GCP_PROJECT }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
-            -var="environment=${{ env.ENV_NAME }}"
+            -var="environment=${{ github.ref_name }}"
 
       - name: Terraform Apply
         run: terraform -chdir=terraform/dev apply -input=false -auto-approve tfplan

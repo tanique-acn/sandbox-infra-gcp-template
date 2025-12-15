@@ -22,45 +22,36 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "env_prefix" {
-  description = "Optional prefix applied to all resource names (helps multi-repo or shared naming)"
-  type        = string
-  default     = ""
-}
-
-variable "network_name" {
-  description = "Base VPC network name (a suffix with environment will be added)"
-  type        = string
-  default     = "sandbox-vpc"
-}
-
-variable "instance_name" {
-  description = "Base compute instance name (a suffix with environment will be added)"
-  type        = string
-  default     = "sandbox-instance"
-}
-
 variable "machine_type" {
-  description = "Default machine type to use for compute instances"
-  type        = string
-  default     = "e2-micro"
-}
-
-variable "environment_machine_types" {
-  description = "Optional per-environment overrides for machine types"
+  description = "Instance Machine Types"
   type        = map(string)
   default = {
-    dev        = "e2-micro"
-    qa         = "e2-small"
-    uat        = "e2-small"
-    production = "e2-medium"
+    micro        = "e2-micro"
+    small        = "e2-small"
+    medium       = "e2-medium"
   }
 }
 
-variable "bucket_name" {
-  description = "Optional explicit bucket name. If empty, a name is generated per environment."
-  type        = string
-  default     = ""
+variable "machine_image_type" {
+  description = "Instance Machine Image Types"
+  type        = map(string)
+  default = {
+    debian        = "debian-cloud/debian-12"
+    centos        = "centos-cloud/centos-10"
+    rhel          = "rhel-cloud/debian-10"
+    windows       = "windows-cloud/windows-2022"
+  }
+}
+
+variable "machine_disk_size" {
+  description = "Instance Boot Disk Sizes"
+  type        = map(number)
+  default = {
+    micro        = 10
+    small        = 20
+    medium       = 50
+    large        = 100
+  }
 }
 
 variable "subnet_cidr" {
@@ -72,12 +63,5 @@ variable "subnet_cidr" {
 variable "tags" {
   description = "Tags to attach to resources (can include environment tag)"
   type        = list(string)
-  default     = []
-}
-
-# Example: adjust counts or other environment-specific flags via this map if needed
-variable "env_flags" {
-  description = "Free-form map for environment-specific boolean flags"
-  type        = map(any)
-  default     = {}
+  default     = ["sandbox"]
 }
