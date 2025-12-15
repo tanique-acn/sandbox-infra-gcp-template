@@ -20,8 +20,8 @@ jobs:
 
       - name: Set Secrets
         run: |
-          echo "ENV_NAME=dev" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT_DEV }}" >> $GITHUB_ENV
+          echo "ENV_NAME=${{github.ref_name}}" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -89,6 +89,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set Secrets
+        run: |
+          echo "ENV_NAME=${{github.ref_name}}" >> $GITHUB_ENV
+          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
+      
       - name: Download Plan Artifact
         uses: actions/download-artifact@v4
         with:
@@ -106,4 +111,4 @@ jobs:
           -backend-config="prefix=${{ secrets.TF_STATE_PREFIX }}/${{ env.ENV_NAME }}"
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -input=false tfplan   
+        run: terraform -chdir=terraform apply -input=false -auto-approve tfplan-${{ env.ENV_NAME }}   
