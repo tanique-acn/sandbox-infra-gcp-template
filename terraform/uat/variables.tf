@@ -37,8 +37,8 @@ variable "machine_image_type" {
   type        = map(string)
   default = {
     debian  = "debian-cloud/debian-12"
-    centos  = "centos-cloud/centos-10"
-    rhel    = "rhel-cloud/debian-10"
+    centos  = "centos-cloud/centos-stream-10"
+    rhel    = "rhel-cloud/rhel-10"
     windows = "windows-cloud/windows-2022"
   }
 }
