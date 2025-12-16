@@ -1,4 +1,4 @@
-name: "Uat Build and Deploy"
+name: "UAT Build and Deploy"
 
 on:
   push:
