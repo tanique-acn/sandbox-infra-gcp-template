@@ -1,9 +1,9 @@
-name: "Dev Build and Deploy"
+name: "Uat Build and Deploy"
 
 on:
   push:
     branches:
-      - dev
+      - uat
 
 permissions:
   contents: read
@@ -13,8 +13,8 @@ jobs:
   tf-plan:
     name: Terraform Plan
     runs-on: ubuntu-latest
-    if: github.ref_name == 'dev'
-    environment: dev 
+    if: github.ref_name == 'uat'
+    environment: uat 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,25 +40,25 @@ jobs:
           terraform_version: '1.5.7'
 
       - name: Terraform FMT
-        run: terraform -chdir=terraform/dev fmt -check
+        run: terraform -chdir=terraform/uat fmt -check
 
       - name: Terraform Init
         run: |
-          terraform -chdir=terraform/dev init -input=false
+          terraform -chdir=terraform/uat init -input=false
 
       - name: Terraform Validate
-        run: terraform -chdir=terraform/dev validate
+        run: terraform -chdir=terraform/uat validate
 
       - name: Setup and Run TFLint
         uses: terraform-linters/setup-tflint@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          config_file: terraform/dev/.tflint.hcl
+          config_file: terraform/uat/.tflint.hcl
           cache: true # Caching helps speed up subsequent runs
 
       - name: Terraform Plan
         run: |
-          terraform -chdir=terraform/dev plan -out=tfplan -input=false \
+          terraform -chdir=terraform/uat plan -out=tfplan -input=false \
             -var="project=${{ secrets.GCP_PROJECT }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
@@ -68,13 +68,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tfplan-${{ github.ref_name }}
-          path: terraform/dev/tfplan
+          path: terraform/uat/tfplan
     
   tf-apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
     needs: tf-plan
-    environment: dev
+    environment: uat
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -101,15 +101,15 @@ jobs:
 
       - name: Terraform Init
         run: |
-          terraform -chdir=terraform/dev init -input=false
+          terraform -chdir=terraform/uat init -input=false
       
       - name: Terraform Plan
         run: |
-          terraform -chdir=terraform/dev plan -out=tfplan -input=false \
+          terraform -chdir=terraform/uat plan -out=tfplan -input=false \
             -var="project=${{ secrets.GCP_PROJECT }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
             -var="environment=${{ github.ref_name }}"
 
       - name: Terraform Apply
-        run: terraform -chdir=terraform/dev apply -input=false -auto-approve tfplan
+        run: terraform -chdir=terraform/uat apply -input=false -auto-approve tfplan
