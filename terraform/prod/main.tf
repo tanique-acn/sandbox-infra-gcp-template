@@ -39,13 +39,13 @@ resource "google_storage_bucket" "app_bucket" {
 # Compute Instance
 resource "google_compute_instance" "vm" {
   name         = "sandbox-vm-${var.environment}"
-  machine_type = var.machine_type.micro
+  machine_type = var.machine_type.medium
   zone         = var.zone
 
   boot_disk {
     initialize_params {
-      image = var.machine_image_type.debian
-      size  = var.machine_disk_size.micro
+      image = var.machine_image_type.windows
+      size  = var.machine_disk_size.large
     }
   }
 
