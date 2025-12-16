@@ -57,7 +57,7 @@ variable "machine_disk_size" {
 variable "subnet_cidr" {
   description = "CIDR range for the environment subnetwork"
   type        = string
-  default     = "10.10.0.4/24"
+  default     = "10.14.0.0/24"
 }
 
 variable "tags" {
