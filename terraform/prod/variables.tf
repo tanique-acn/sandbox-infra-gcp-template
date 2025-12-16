@@ -19,7 +19,7 @@ variable "zone" {
 variable "environment" {
   description = "Deployment Environment"
   type        = string
-  default     = "dev"
+  default     = "prod"
 }
 
 variable "machine_type" {
@@ -57,7 +57,7 @@ variable "machine_disk_size" {
 variable "subnet_cidr" {
   description = "CIDR range for the environment subnetwork"
   type        = string
-  default     = "10.10.0.0/24"
+  default     = "10.16.0.0/24"
 }
 
 variable "tags" {
