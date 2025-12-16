@@ -19,11 +19,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Secrets
-        run: |
-          echo "ENV_NAME=${{github.ref_name}}" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -62,12 +57,12 @@ jobs:
             -var="project=${{ secrets.GCP_PROJECT }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
-            -var="environment=${{ github.ref_name }}"
+            -var="environment=${{ secrets.ENV_NAME }}"
 
       - name: Upload Plan Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: tfplan-${{ github.ref_name }}
+          name: tfplan-${{ secrets.ENV_NAME }}
           path: terraform/uat/tfplan
     
   tf-apply:
@@ -78,11 +73,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Set Secrets
-        run: |
-          echo "ENV_NAME=${{github.ref_name}}" >> $GITHUB_ENV
-          echo "TF_VAR_project=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -109,7 +99,7 @@ jobs:
             -var="project=${{ secrets.GCP_PROJECT }}" \
             -var="region=${{ secrets.GCP_REGION }}" \
             -var="zone=${{ secrets.GCP_ZONE }}" \
-            -var="environment=${{ github.ref_name }}"
+            -var="environment=${{ secrets.ENV_NAME }}"
 
       - name: Terraform Apply
         run: terraform -chdir=terraform/uat apply -input=false -auto-approve tfplan
